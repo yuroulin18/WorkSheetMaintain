@@ -16,7 +16,7 @@ namespace WorkSheetMaintain
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
-                defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
+                defaults: new { controller = "WorkSheet", action = "Index", id = UrlParameter.Optional }
             );
         }
     }
