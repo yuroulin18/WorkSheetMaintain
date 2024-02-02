@@ -1,0 +1,146 @@
+﻿@model WorkSheetMaintain.Models.WSheetSearchArg
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2></h2>
+
+<div class="form-horizontal">
+
+    <div class="form-group">
+        <label class="control-label col-md-2">品牌 brand</label>
+        <div class="col-md-10">
+            <select id="brandid" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-md-2">系列 famliy</label>
+        <div class="col-md-10">
+            <select id="familyid" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-md-2">型號 model</label>
+        <div class="col-md-10">
+            <select id="modelid" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-md-2">尺寸 size</label>
+        <div class="col-md-10">
+            <select id="sizelid" class="form-control"></select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-2">
+        </div>
+        <dsearchresultiv class="col-md-10">
+            <input type="button" id="btnSearch" value="查詢" class="btn btn-default" />
+            <input type="button" value="清除" onclick="window.location.href='/WorkSheet/Index'" class="btn btn-default" />
+        </dsearchresultiv>
+    </div>
+
+    <div id="WsheetGrid"></div>
+
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        //找到所有下拉式選單
+        var dl = document.querySelectorAll("select");
+        dl.forEach(function (userItem) {
+            userItem = "#" + userItem.id;
+            $(userItem).kendoDropDownList({
+                optionLabel: "請選擇",
+                dataTextField: "Text",
+                dataValueField: "Value",
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "/WorkSheet/GetListData",
+                            type: "post",
+                            dataType: "json",
+                            data: { ListType: userItem }
+                        }
+                    }
+                }
+            });
+        });
+
+        //資料庫擷取
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: function (options) {
+                    $.ajax({
+                        url: "/WorkSheet/GetSearchData",
+                        type: "post",
+                        dataType: "json",
+                        data: {
+                            brand: $("#brandid").data("kendoDropDownList").value(),
+                            family: $("#familyid").data("kendoDropDownList").value(),
+                            model: $("#modelid").data("kendoDropDownList").value(),
+                            size: $("#sizelid").data("kendoDropDownList").value()
+                        },
+                        success: function (result) {
+                            options.success(result);
+                        },
+                        error: function (result) {
+                            options.error(result);
+                        }
+                    });
+                }
+            },
+            schema: {
+                model: {
+                    fields: {
+                        brand: { type: "string" },
+                        family: { type: "string" },
+                        model: { type: "string" },
+                        size: { type: "string" },
+                        brightness: { type: "string" },
+                        oled: { type: "string" },
+                        touchscreen: { type: "string" },
+                        sku: { type: "int" }
+                    }
+                }
+            },
+            pageSize: 10
+        });
+
+        //將資料置入kendoGrid表格(一開始即顯示)
+        $("#WsheetGrid").kendoGrid({
+            dataSource: dataSource,
+            columns: [
+                { field: "brand", title: "品牌" },
+                { field: "family", title: "系列", width: "15%"  },
+                { field: "model", title: "型號", width: "20%"},
+                { field: "size", title: "尺寸", width: "15%" },
+                { field: "brightness", title: "亮度(nits)" },
+                { field: "oled", title: "是否有oled" },
+                { field: "touchscreen", title: "是否有觸屏" },
+                { field: "sku", title: "SKU合計" }
+            ],
+            sortable: true,
+            pageable: {
+                pageSize: 10,
+                input: true,
+                numeric: false
+            }
+        });
+
+        //按查詢後變更表格內容
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+            dataSource.read();
+        });
+
+
+    });
+</script>
+
