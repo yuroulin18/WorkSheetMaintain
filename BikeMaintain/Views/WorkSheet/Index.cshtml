@@ -185,20 +185,23 @@
             //總表_建立查詢結果清單
             $("#WsheetGrid").kendoGrid({
                 dataSource: dataSource,                
-                toolbar: ["excel"],
+                toolbar: ["excel","pdf"],
                 excel: {
                     fileName: "Worksheet Summary.xlsx"
                 },
+                pdf: {
+                    fileName: "Worksheet Summary.pdf"
+                },
                 columns: [
-                    { field: "brand", title: "品牌" },
-                    { field: "family", title: "系列", width: "10%" },
-                    { field: "model", title: "型號", width: "10%" },
-                    { field: "size", title: "尺寸" },
-                    { field: "resolution", title: "解析度", width: "10%" },
-                    { field: "brightness", title: "亮度(nits)" },
+                    { field: "brand", title: "Brand" },
+                    { field: "family", title: "Family", width: "10%" },
+                    { field: "model", title: "Model", width: "10%" },
+                    { field: "size", title: "Size" },
+                    { field: "resolution", title: "Resolution", width: "10%" },
+                    { field: "brightness", title: "Brightness" },
                     { field: "oled", title: "OLED" },
-                    { field: "touchscreen", title: "觸屏" },
-                    { field: "sku", title: "SKU合計" },
+                    { field: "touchscreen", title: "Touchscreen" },
+                    { field: "sku", title: "SKU count" },
                     { field: "unit", title: "Unit"},
                     { field: "Estimation", title: "Estimation"}
                 ],
@@ -283,16 +286,19 @@
             //FFamily_建立查詢結果清單
             $("#FFamilyGrid").kendoGrid({
                 dataSource: dataSource_Family,
-                toolbar: ["excel"],
+                toolbar: ["excel", "pdf"],
                 excel: {
                     fileName: "Feature Family.xlsx"
                 },
+                pdf: {
+                    fileName: "Feature Family.pdf"
+                },
                 columns: [
-                    { field: "brand", title: "品牌" },
-                    { field: "category", title: "筆電種類" },
-                    { field: "family", title: "系列" },
-                    { field: "sku", title: "SKU合計" },
-                    { field: "sku_Pct", title: "SKU於品牌佔比" }
+                    { field: "brand", title: "Brand" },
+                    { field: "category", title: "Laptop type" },
+                    { field: "family", title: "Family" },
+                    { field: "sku", title: "SKU count" },
+                    { field: "sku_Pct", title: "SKU ratio" }
                 ],
                 sortable: true,
                 height: 550
@@ -334,15 +340,18 @@
             //FSizeGrid_建立查詢結果清單
             $("#FSizeGrid").kendoGrid({
                 dataSource: dataSource_Size,
-                toolbar: ["excel"],
+                toolbar: ["excel", "pdf"],
                 excel: {
                     fileName: "Feature Size.xlsx"
                 },
+                pdf: {
+                    fileName: "Feature Size.pdf"
+                },
                 columns: [
-                    { field: "brand", title: "品牌" },
-                    { field: "size", title: "尺寸" },
-                    { field: "sku", title: "SKU合計" },
-                    { field: "sku_Pct", title: "SKU於品牌佔比" }
+                    { field: "brand", title: "Brand" },
+                    { field: "size", title: "Size" },
+                    { field: "sku", title: "SKU count" },
+                    { field: "sku_Pct", title: "SKU ratio" }
                 ],
                 sortable: true,
                 height: 550
@@ -383,15 +392,18 @@
             //FCPUGrid_建立查詢結果清單
             $("#FCPUGrid").kendoGrid({
                 dataSource: dataSource_CPU,
-                toolbar: ["excel"],
+                toolbar: ["excel", "pdf"],
                 excel: {
                     fileName: "Feature CPU Gen.xlsx"
                 },
+                pdf: {
+                    fileName: "Feature CPU Gen.pdf"
+                },
                 columns: [
-                    { field: "brand", title: "品牌" },
-                    { field: "cpu", title: "CPU型號" },
-                    { field: "sku", title: "SKU合計" },
-                    { field: "sku_Pct", title: "SKU於品牌佔比" }
+                    { field: "brand", title: "Brand" },
+                    { field: "cpu", title: "CPU Gen" },
+                    { field: "sku", title: "SKU count" },
+                    { field: "sku_Pct", title: "SKU ratio" }
                 ],
                 sortable: true,
                 height: 550
@@ -432,15 +444,18 @@
             //FGPUGrid_建立查詢結果清單
             $("#FGPUGrid").kendoGrid({
                 dataSource: dataSource_GPU,
-                toolbar: ["excel"],
+                toolbar: ["excel", "pdf"],
                 excel: {
                     fileName: "Feature GPU Group.xlsx"
                 },
+                pdf: {
+                    fileName: "Feature GPU Group.pdf"
+                },
                 columns: [
-                    { field: "brand", title: "品牌" },
-                    { field: "gpu", title: "GPU系列" },
-                    { field: "sku", title: "SKU合計" },
-                    { field: "sku_Pct", title: "SKU於品牌佔比" }
+                    { field: "brand", title: "Brand" },
+                    { field: "gpu", title: "GPU Group" },
+                    { field: "sku", title: "SKU count" },
+                    { field: "sku_Pct", title: "SKU ratio" }
                 ],
                 sortable: true,
                 height: 550
@@ -484,16 +499,19 @@
             //FDisplayGrid_建立查詢結果清單
             $("#FDisplayGrid").kendoGrid({
                 dataSource: dataSource_Display,
-                toolbar: ["excel"],
+                toolbar: ["excel", "pdf"],
                 excel: {
                     fileName: "Feature Display.xlsx"
                 },
+                pdf: {
+                    fileName: "Feature Display.pdf"
+                },
                 columns: [
-                    { field: "brand", title: "品牌" },
-                    { field: "size", title: "尺寸" },
-                    { field: "resolution", title: "解析度", width: "10%" },
-                    { field: "sku", title: "SKU合計" },
-                    { field: "sku_Pct", title: "SKU於品牌佔比" }
+                    { field: "brand", title: "Brand" },
+                    { field: "size", title: "Size" },
+                    { field: "resolution", title: "Resolution", width: "10%" },
+                    { field: "sku", title: "SKU count" },
+                    { field: "sku_Pct", title: "SKU ratio" }
                 ],
                 sortable: true,
                 height: 550
