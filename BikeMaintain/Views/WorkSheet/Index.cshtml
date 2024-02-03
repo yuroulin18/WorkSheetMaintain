@@ -4,6 +4,8 @@
     ViewBag.Title = "Index";
 }
 
+<script src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
+
 <h2></h2>
 
 <div class="form-horizontal">
@@ -11,28 +13,35 @@
     <div class="form-group">
         <label class="control-label col-md-2">品牌 brand</label>
         <div class="col-md-10">
-            <select id="brandid" class="form-control"></select>
+            <div id="brandid"></div>
         </div>
     </div>
 
     <div class="form-group">
         <label class="control-label col-md-2">系列 famliy</label>
         <div class="col-md-10">
-            <select id="familyid" class="form-control"></select>
+            <div id="familyid"></div>
         </div>
     </div>
 
     <div class="form-group">
         <label class="control-label col-md-2">型號 model</label>
         <div class="col-md-10">
-            <select id="modelid" class="form-control"></select>
+            <div id="modelid"></div>
         </div>
     </div>
 
     <div class="form-group">
         <label class="control-label col-md-2">尺寸 size</label>
         <div class="col-md-10">
-            <select id="sizelid" class="form-control"></select>
+            <div id="sizelid"></div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-md-2">解析度 resolution</label>
+        <div class="col-md-10">
+            <div id="resolutionid"></div>
         </div>
     </div>
 
@@ -45,102 +54,461 @@
         </dsearchresultiv>
     </div>
 
-    <div id="WsheetGrid"></div>
+    <hr />
 
-</div>
+    <div id="tabstrip">
+        <ul>
+            <li id="tab1">
+                Summary
+            </li>
+            <li>
+                Feature Family
+            </li>
+            <li>
+                Feature Size
+            </li>
+            <li>
+                Feature CPU
+            </li>
+            <li>
+                Feature GPU
+            </li>
+            <li>
+                Feature Display
+            </li>
+        </ul>
+        <div>
+            <div id="WsheetGrid"></div>
+        </div>
+        <div>
+            <div id="FFamilyGrid"></div>
+        </div>
+        <div>
+            <div id="FSizeGrid"></div>
+        </div>
+        <div>
+            <div id="FCPUGrid"></div>
+        </div>
+        <div>
+            <div id="FGPUGrid"></div>
+        </div>
+        <div>
+            <div id="FDisplayGrid"></div>
+        </div>
+    </div>
 
-<script type="text/javascript">
-    $(document).ready(function () {
+    <script type="text/javascript">
+        var tabToActivate = $("#tab1");
+        $("#tabstrip").kendoTabStrip().data("kendoTabStrip").activateTab(tabToActivate);
 
-        //找到所有下拉式選單
-        var dl = document.querySelectorAll("select");
-        dl.forEach(function (userItem) {
-            userItem = "#" + userItem.id;
-            $(userItem).kendoDropDownList({
-                optionLabel: "請選擇",
-                dataTextField: "Text",
-                dataValueField: "Value",
-                dataSource: {
-                    transport: {
-                        read: {
-                            url: "/WorkSheet/GetListData",
+        $(document).ready(function () {
+            //頁籤切換
+            $("#tabstrip").kendoTabStrip({
+                animation: {
+                    open: {
+                        effects: "fadeIn"
+                    }
+                }
+            });
+
+            //找到所有多選單
+            var dl = document.querySelectorAll("div#brandid, div#familyid, div#modelid, div#sizelid, div#resolutionid");
+            dl.forEach(function (userItem) {
+                userItem = "#" + userItem.id;
+                $(userItem).kendoMultiSelect({
+                    autoBind: false,
+                    dataTextField: "Text",
+                    dataValueField: "Value",
+                    dataSource: {
+                        transport: {
+                            read: {
+                                url: "/WorkSheet/GetListData",
+                                type: "post",
+                                dataType: "json",
+                                data: { ListType: userItem }
+                            }
+                        }
+                    }
+                });
+            });
+
+            //視窗清空
+            $("#brandid").data("kendoMultiSelect").value([]);
+            $("#familyid").data("kendoMultiSelect").value([]);
+            $("#modelid").data("kendoMultiSelect").value([]);
+            $("#sizelid").data("kendoMultiSelect").value([]);
+            $("#resolutionid").data("kendoMultiSelect").value([]);
+
+            //總表_資料庫擷取
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: function (options) {
+                        $.ajax({
+                            url: "/WorkSheet/GetSearchData",
                             type: "post",
                             dataType: "json",
-                            data: { ListType: userItem }
+                            data: {
+                                brand: $("#brandid").data("kendoMultiSelect").value(),
+                                family: $("#familyid").data("kendoMultiSelect").value(),
+                                model: $("#modelid").data("kendoMultiSelect").value(),
+                                size: $("#sizelid").data("kendoMultiSelect").value(),
+                                resolution: $("#resolutionid").data("kendoMultiSelect").value(),
+                            },
+                            success: function (result) {
+                                options.success(result);
+                            },
+                            error: function (result) {
+                                options.error(result);
+                            }
+                        });
+                    }
+                },
+                schema: {
+                    model: {
+                        fields: {
+                            brand: { type: "string", editable: false},
+                            family: { type: "string", editable: false },
+                            model: { type: "string", editable: false },
+                            size: { type: "string", editable: false },
+                            resolution: { type: "string", editable: false },
+                            brightness: { type: "string", editable: false },
+                            oled: { type: "string", editable: false },
+                            touchscreen: { type: "string", editable: false },
+                            sku: { type: "number", editable: false },
+                            unit: { type: "number" },
+                            Estimation: { type: "number" }
                         }
                     }
                 }
             });
-        });
 
-        //資料庫擷取
-        var dataSource = new kendo.data.DataSource({
-            transport: {
-                read: function (options) {
-                    $.ajax({
-                        url: "/WorkSheet/GetSearchData",
-                        type: "post",
-                        dataType: "json",
-                        data: {
-                            brand: $("#brandid").data("kendoDropDownList").value(),
-                            family: $("#familyid").data("kendoDropDownList").value(),
-                            model: $("#modelid").data("kendoDropDownList").value(),
-                            size: $("#sizelid").data("kendoDropDownList").value()
-                        },
-                        success: function (result) {
-                            options.success(result);
-                        },
-                        error: function (result) {
-                            options.error(result);
+            //總表_建立查詢結果清單
+            $("#WsheetGrid").kendoGrid({
+                dataSource: dataSource,                
+                toolbar: ["excel"],
+                excel: {
+                    fileName: "Worksheet Summary.xlsx"
+                },
+                columns: [
+                    { field: "brand", title: "品牌" },
+                    { field: "family", title: "系列", width: "10%" },
+                    { field: "model", title: "型號", width: "10%" },
+                    { field: "size", title: "尺寸" },
+                    { field: "resolution", title: "解析度", width: "10%" },
+                    { field: "brightness", title: "亮度(nits)" },
+                    { field: "oled", title: "OLED" },
+                    { field: "touchscreen", title: "觸屏" },
+                    { field: "sku", title: "SKU合計" },
+                    { field: "unit", title: "Unit"},
+                    { field: "Estimation", title: "Estimation"}
+                ],
+                sortable: true,
+                height: 550,
+                editable: "incell"
+                //要寫update的邏輯
+                //save: function (e) {
+                //    if (e.values.name !== "") {
+                //        // the user changed the name field
+                //        if (e.values.name !== e.model.name) {
+                //            /* The result can be observed in the DevTools(F12) console of the browser. */
+                //            console.log("name is modified");
+                //        }
+                //    } else {
+                //        e.preventDefault();
+                //        /* The result can be observed in the DevTools(F12) console of the browser. */
+                //        console.log("name cannot be empty");
+                //    }
+                //}
+                //範例
+                //if(confirm("確定要編輯嗎？")) {
+                //    $.ajax({
+                //        type: "POST",
+                //        url: "/Book/UpdateBook",
+                //        data: {
+                //            BookId: id,
+                //            BookName: $("#BookName").val(),
+                //            BookAuthor: $("#BookAuthor").val(),
+                //            BookPublisher: $("#BookPublisher").val(),
+                //            Introduction: $("#Introduction").val(),
+                //            //BookBuyDate: $("#BookBuyDate").val(),
+                //            BookBuyDate: kendo.toString($("#BookBuyDate").data("kendoDatePicker").value(), "yyyy-MM-dd"),
+                //            BookClass: $("#BookClassId").data("kendoDropDownList").value(),
+                //            BookCode: $("#BookCodeId").data("kendoDropDownList").value(),
+                //            BookLendUser: $("#BookLendUserId").data("kendoDropDownList").value()
+                //        },
+                //        dataType: "json",
+                //        success: function (response) {
+                //            alert("編輯成功");
+                //        }, error: function (error) {
+                //            alert("系統發生錯誤");
+                //        }
+                //    });
+                //}
+            });
+
+            //FFamily_資料庫擷取
+            var dataSource_Family = new kendo.data.DataSource({
+                transport: {
+                    read: function (options) {
+                        $.ajax({
+                            url: "/WorkSheet/GetFamilyData",
+                            type: "post",
+                            dataType: "json",
+                            data: {
+                                brand: $("#brandid").data("kendoMultiSelect").value(),
+                                family: $("#familyid").data("kendoMultiSelect").value()
+                            },
+                            success: function (result) {
+                                options.success(result);
+                            },
+                            error: function (result) {
+                                options.error(result);
+                            }
+                        });
+                    }
+                },
+                schema: {
+                    model: {
+                        fields: {
+                            brand: { type: "string" },
+                            category: { type: "string" },
+                            family: { type: "string" },
+                            sku: { type: "number" },
+                            sku_Pct: { type: "string" }
                         }
-                    });
-                }
-            },
-            schema: {
-                model: {
-                    fields: {
-                        brand: { type: "string" },
-                        family: { type: "string" },
-                        model: { type: "string" },
-                        size: { type: "string" },
-                        brightness: { type: "string" },
-                        oled: { type: "string" },
-                        touchscreen: { type: "string" },
-                        sku: { type: "int" }
                     }
                 }
-            },
-            pageSize: 10
+            });
+
+            //FFamily_建立查詢結果清單
+            $("#FFamilyGrid").kendoGrid({
+                dataSource: dataSource_Family,
+                toolbar: ["excel"],
+                excel: {
+                    fileName: "Feature Family.xlsx"
+                },
+                columns: [
+                    { field: "brand", title: "品牌" },
+                    { field: "category", title: "筆電種類" },
+                    { field: "family", title: "系列" },
+                    { field: "sku", title: "SKU合計" },
+                    { field: "sku_Pct", title: "SKU於品牌佔比" }
+                ],
+                sortable: true,
+                height: 550
+            });
+
+            //FSizeGrid_資料庫擷取
+            var dataSource_Size = new kendo.data.DataSource({
+                transport: {
+                    read: function (options) {
+                        $.ajax({
+                            url: "/WorkSheet/GetSizeData",
+                            type: "post",
+                            dataType: "json",
+                            data: {
+                                brand: $("#brandid").data("kendoMultiSelect").value(),
+                                size: $("#sizelid").data("kendoMultiSelect").value()
+                            },
+                            success: function (result) {
+                                options.success(result);
+                            },
+                            error: function (result) {
+                                options.error(result);
+                            }
+                        });
+                    }
+                },
+                schema: {
+                    model: {
+                        fields: {
+                            brand: { type: "string" },
+                            size: { type: "string" },
+                            sku: { type: "number" },
+                            sku_Pct: { type: "string" }
+                        }
+                    }
+                }
+            });
+
+            //FSizeGrid_建立查詢結果清單
+            $("#FSizeGrid").kendoGrid({
+                dataSource: dataSource_Size,
+                toolbar: ["excel"],
+                excel: {
+                    fileName: "Feature Size.xlsx"
+                },
+                columns: [
+                    { field: "brand", title: "品牌" },
+                    { field: "size", title: "尺寸" },
+                    { field: "sku", title: "SKU合計" },
+                    { field: "sku_Pct", title: "SKU於品牌佔比" }
+                ],
+                sortable: true,
+                height: 550
+            });
+
+            //FCPUGrid_資料庫擷取
+            var dataSource_CPU = new kendo.data.DataSource({
+                transport: {
+                    read: function (options) {
+                        $.ajax({
+                            url: "/WorkSheet/GetCpuData",
+                            type: "post",
+                            dataType: "json",
+                            data: {
+                                brand: $("#brandid").data("kendoMultiSelect").value()
+                            },
+                            success: function (result) {
+                                options.success(result);
+                            },
+                            error: function (result) {
+                                options.error(result);
+                            }
+                        });
+                    }
+                },
+                schema: {
+                    model: {
+                        fields: {
+                            brand: { type: "string" },
+                            cpu: { type: "string" },
+                            sku: { type: "number" },
+                            sku_Pct: { type: "string" }
+                        }
+                    }
+                }
+            });
+
+            //FCPUGrid_建立查詢結果清單
+            $("#FCPUGrid").kendoGrid({
+                dataSource: dataSource_CPU,
+                toolbar: ["excel"],
+                excel: {
+                    fileName: "Feature CPU Gen.xlsx"
+                },
+                columns: [
+                    { field: "brand", title: "品牌" },
+                    { field: "cpu", title: "CPU型號" },
+                    { field: "sku", title: "SKU合計" },
+                    { field: "sku_Pct", title: "SKU於品牌佔比" }
+                ],
+                sortable: true,
+                height: 550
+            });
+
+            //FGPUGrid_資料庫擷取
+            var dataSource_GPU = new kendo.data.DataSource({
+                transport: {
+                    read: function (options) {
+                        $.ajax({
+                            url: "/WorkSheet/GetGpuData",
+                            type: "post",
+                            dataType: "json",
+                            data: {
+                                brand: $("#brandid").data("kendoMultiSelect").value()
+                            },
+                            success: function (result) {
+                                options.success(result);
+                            },
+                            error: function (result) {
+                                options.error(result);
+                            }
+                        });
+                    }
+                },
+                schema: {
+                    model: {
+                        fields: {
+                            brand: { type: "string" },
+                            gpu: { type: "string" },
+                            sku: { type: "number" },
+                            sku_Pct: { type: "string" }
+                        }
+                    }
+                }
+            });
+
+            //FGPUGrid_建立查詢結果清單
+            $("#FGPUGrid").kendoGrid({
+                dataSource: dataSource_GPU,
+                toolbar: ["excel"],
+                excel: {
+                    fileName: "Feature GPU Group.xlsx"
+                },
+                columns: [
+                    { field: "brand", title: "品牌" },
+                    { field: "gpu", title: "GPU系列" },
+                    { field: "sku", title: "SKU合計" },
+                    { field: "sku_Pct", title: "SKU於品牌佔比" }
+                ],
+                sortable: true,
+                height: 550
+            });
+
+            //FDisplayGrid_資料庫擷取
+            var dataSource_Display = new kendo.data.DataSource({
+                transport: {
+                    read: function (options) {
+                        $.ajax({
+                            url: "/WorkSheet/GetDisplayData",
+                            type: "post",
+                            dataType: "json",
+                            data: {
+                                brand: $("#brandid").data("kendoMultiSelect").value(),
+                                size: $("#sizelid").data("kendoMultiSelect").value(),
+                                resolution: $("#resolutionid").data("kendoMultiSelect").value(),
+                            },
+                            success: function (result) {
+                                options.success(result);
+                            },
+                            error: function (result) {
+                                options.error(result);
+                            }
+                        });
+                    }
+                },
+                schema: {
+                    model: {
+                        fields: {
+                            brand: { type: "string" },
+                            size: { type: "string" },
+                            resolution: { type: "string" },
+                            sku: { type: "number" },
+                            sku_Pct: { type: "string" }
+                        }
+                    }
+                }
+            });
+
+            //FDisplayGrid_建立查詢結果清單
+            $("#FDisplayGrid").kendoGrid({
+                dataSource: dataSource_Display,
+                toolbar: ["excel"],
+                excel: {
+                    fileName: "Feature Display.xlsx"
+                },
+                columns: [
+                    { field: "brand", title: "品牌" },
+                    { field: "size", title: "尺寸" },
+                    { field: "resolution", title: "解析度", width: "10%" },
+                    { field: "sku", title: "SKU合計" },
+                    { field: "sku_Pct", title: "SKU於品牌佔比" }
+                ],
+                sortable: true,
+                height: 550
+            });
+
+            //按查詢後變更表格內容
+            $("#btnSearch").click(function (e) {
+                e.preventDefault();
+                dataSource.read();
+                dataSource_Family.read();
+                dataSource_Size.read();
+                dataSource_CPU.read();
+                dataSource_GPU.read();
+                dataSource_Display.read();
+            });
         });
-
-        //將資料置入kendoGrid表格(一開始即顯示)
-        $("#WsheetGrid").kendoGrid({
-            dataSource: dataSource,
-            columns: [
-                { field: "brand", title: "品牌" },
-                { field: "family", title: "系列", width: "15%"  },
-                { field: "model", title: "型號", width: "20%"},
-                { field: "size", title: "尺寸", width: "15%" },
-                { field: "brightness", title: "亮度(nits)" },
-                { field: "oled", title: "是否有oled" },
-                { field: "touchscreen", title: "是否有觸屏" },
-                { field: "sku", title: "SKU合計" }
-            ],
-            sortable: true,
-            pageable: {
-                pageSize: 10,
-                input: true,
-                numeric: false
-            }
-        });
-
-        //按查詢後變更表格內容
-        $("#btnSearch").click(function (e) {
-            e.preventDefault();
-            dataSource.read();
-        });
-
-
-    });
-</script>
+    </script>
 
